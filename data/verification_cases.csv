@@ -1,0 +1,192 @@
+case_id,rank,registration_number,risk_score,risk_tier,status,reasons,evidence
+TR-2026-00001,1,MP07CB8897,80,CRITICAL,VERIFY,"Commercial permit expired | FASTag status: INACTIVE | Colour mismatch: registered Yellow, detected Red",ANPR ANPR-000701: colour mismatch
+TR-2026-00002,2,AP16CH9545,65,HIGH,VERIFY,"Fitness certificate expired | Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000613
+TR-2026-00003,3,DL8CAU6883,65,HIGH,VERIFY,"Fitness certificate expired | Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000608
+TR-2026-00004,4,HR26DJ8832,60,HIGH,VERIFY,"Fitness certificate expired | FASTag status: BLACKLISTED | Colour mismatch: registered White, detected Red",ANPR ANPR-000716: colour mismatch
+TR-2026-00005,5,ML1032811,60,HIGH,VERIFY,"Commercial permit expired | FASTag identity mismatch: registered FT-000100, observed FT-FAKE-0020 | FASTag transaction identity mismatch",FASTag FT-TXN-000620
+TR-2026-00006,6,AP07AD5555,50,MEDIUM,VERIFY,"Fitness certificate expired | Vehicle type mismatch: registered Bike, detected Truck",ANPR ANPR-000694: vehicle type mismatch
+TR-2026-00007,7,AR02A7116,50,MEDIUM,VERIFY,"FASTag status: INACTIVE | Vehicle type mismatch: registered Truck, detected Bike",ANPR ANPR-000695: vehicle type mismatch
+TR-2026-00008,8,CG04HC4887,50,MEDIUM,VERIFY,"Commercial permit expired | Colour mismatch: registered Black, detected Red",ANPR ANPR-000719: colour mismatch
+TR-2026-00009,9,GJ01RM3413,50,MEDIUM,VERIFY,"Commercial permit expired | Colour mismatch: registered Yellow, detected Red",ANPR ANPR-000720: colour mismatch
+TR-2026-00010,10,HP12H7917,50,MEDIUM,VERIFY,"FASTag status: BLACKLISTED | Vehicle type mismatch: registered Car, detected Bike",ANPR ANPR-000683: vehicle type mismatch
+TR-2026-00011,11,HP23A6365,50,MEDIUM,VERIFY,"FASTag status: KYC_PENDING | FASTag identity mismatch: registered FT-000094, observed FT-FAKE-0014 | FASTag transaction identity mismatch",FASTag FT-TXN-000614
+TR-2026-00012,12,AP2D4014,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000098, observed FT-FAKE-0018 | FASTag transaction identity mismatch",FASTag FT-TXN-000618
+TR-2026-00013,13,AP5CG6320,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000081, observed FT-FAKE-0001 | FASTag transaction identity mismatch",FASTag FT-TXN-000601
+TR-2026-00014,14,AP99YY7777,40,MEDIUM,VERIFY,No registry match,ANPR event ANPR-000805
+TR-2026-00015,15,AS12S6951,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000084, observed FT-FAKE-0004 | FASTag transaction identity mismatch",FASTag FT-TXN-000604
+TR-2026-00016,16,BR01BE0777,40,MEDIUM,VERIFY,"FASTag status: KYC_PENDING | Colour mismatch: registered Red, detected Blue",ANPR ANPR-000714: colour mismatch
+TR-2026-00017,17,DL1CS8739,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000093, observed FT-FAKE-0013 | FASTag transaction identity mismatch",FASTag FT-TXN-000613
+TR-2026-00018,18,DL3CBS5881,40,MEDIUM,VERIFY,Commercial permit expired | Fitness certificate expired,
+TR-2026-00019,19,DL6CJ8404,40,MEDIUM,VERIFY,Commercial permit expired,
+TR-2026-00020,20,DL8CZ7230,40,MEDIUM,VERIFY,"FASTag status: KYC_PENDING | Colour mismatch: registered Yellow, detected Red",ANPR ANPR-000718: colour mismatch
+TR-2026-00021,21,GA01E5947,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000097, observed FT-FAKE-0017 | FASTag transaction identity mismatch",FASTag FT-TXN-000617
+TR-2026-00022,22,HR26DM2296,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000086, observed FT-FAKE-0006 | FASTag transaction identity mismatch",FASTag FT-TXN-000606
+TR-2026-00023,23,JH10BV1496,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000091, observed FT-FAKE-0011 | FASTag transaction identity mismatch",FASTag FT-TXN-000611
+TR-2026-00024,24,JK03A8042,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000089, observed FT-FAKE-0009 | FASTag transaction identity mismatch",FASTag FT-TXN-000609
+TR-2026-00025,25,JK03D7750,40,MEDIUM,VERIFY,"FASTag status: INACTIVE | Colour mismatch: registered Black, detected Red",ANPR ANPR-000703: colour mismatch
+TR-2026-00026,26,KA99FA1234,40,MEDIUM,VERIFY,No registry match,ANPR event ANPR-000803
+TR-2026-00027,27,MH04HF5092,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000092, observed FT-FAKE-0012 | FASTag transaction identity mismatch",FASTag FT-TXN-000612
+TR-2026-00028,28,MH12GR862,40,MEDIUM,VERIFY,"FASTag status: KYC_PENDING | Colour mismatch: registered Silver, detected Red",ANPR ANPR-000702: colour mismatch
+TR-2026-00029,29,MH47N0712,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000087, observed FT-FAKE-0007 | FASTag transaction identity mismatch",FASTag FT-TXN-000607
+TR-2026-00030,30,MH99ZZ5555,40,MEDIUM,VERIFY,No registry match,ANPR event ANPR-000804
+TR-2026-00031,31,ML10B4503,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000096, observed FT-FAKE-0016 | FASTag transaction identity mismatch",FASTag FT-TXN-000616
+TR-2026-00032,32,OD02C2836,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000088, observed FT-FAKE-0008 | FASTag transaction identity mismatch",FASTag FT-TXN-000608
+TR-2026-00033,33,OD14B7432,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000095, observed FT-FAKE-0015 | FASTag transaction identity mismatch",FASTag FT-TXN-000615
+TR-2026-00034,34,PB04S4253,40,MEDIUM,VERIFY,Commercial permit expired,
+TR-2026-00035,35,PB10EH0164,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000099, observed FT-FAKE-0019 | FASTag transaction identity mismatch",FASTag FT-TXN-000619
+TR-2026-00036,36,PY036993,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000082, observed FT-FAKE-0002 | FASTag transaction identity mismatch",FASTag FT-TXN-000602
+TR-2026-00037,37,PY05A8339,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000083, observed FT-FAKE-0003 | FASTag transaction identity mismatch",FASTag FT-TXN-000603
+TR-2026-00038,38,TN88XX8888,40,MEDIUM,VERIFY,No registry match,ANPR event ANPR-000802
+TR-2026-00039,39,TN99ZZ9999,40,MEDIUM,VERIFY,No registry match,ANPR event ANPR-000801
+TR-2026-00040,40,UP78ED0449,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000090, observed FT-FAKE-0010 | FASTag transaction identity mismatch",FASTag FT-TXN-000610
+TR-2026-00041,41,WB02A03017,40,MEDIUM,VERIFY,"FASTag identity mismatch: registered FT-000085, observed FT-FAKE-0005 | FASTag transaction identity mismatch",FASTag FT-TXN-000605
+TR-2026-00042,42,AP04M7627,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000615
+TR-2026-00043,43,AP31BG7827,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000620
+TR-2026-00044,44,AP39TP0211,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000614
+TR-2026-00045,45,AS01AR1986,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000618
+TR-2026-00046,46,BR01BD5042,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000619
+TR-2026-00047,47,CG04H5060,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000604
+TR-2026-00048,48,GJ05JB6589,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000601
+TR-2026-00049,49,HR56B2626,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000610
+TR-2026-00050,50,JK127959,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000603
+TR-2026-00051,51,JK13C4452,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000602
+TR-2026-00052,52,KA28M3589,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000606
+TR-2026-00053,53,KL0BBJ5001,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000611
+TR-2026-00054,54,KL45C4411,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000617
+TR-2026-00055,55,TS08EZ9463,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000607
+TR-2026-00056,56,UP32EC5577,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000616
+TR-2026-00057,57,WB02W9S3S,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000609
+TR-2026-00058,58,WB02X8795,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000612
+TR-2026-00059,59,WB06J9177,35,MEDIUM,VERIFY,"Movement anomaly: Chennai to Coimbatore, 498 km in 0.33 hours (1494.0 km/h)",Movement MOV-000605
+TR-2026-00060,60,AP16DP7065,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Mini Truck, detected Bike",ANPR ANPR-000700: vehicle type mismatch
+TR-2026-00061,61,AS01AL3746,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Truck, detected Bike",ANPR ANPR-000689: vehicle type mismatch
+TR-2026-00062,62,BR32PA6558,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Truck, detected Bike",ANPR ANPR-000698: vehicle type mismatch
+TR-2026-00063,63,DN09J1548,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Bike, detected Truck",ANPR ANPR-000685: vehicle type mismatch
+TR-2026-00064,64,GJ18BK6705,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Truck, detected Bike",ANPR ANPR-000687: vehicle type mismatch
+TR-2026-00065,65,JH10S5378,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Mini Truck, detected Bike",ANPR ANPR-000686: vehicle type mismatch
+TR-2026-00066,66,ML05F6894,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Car, detected Bike",ANPR ANPR-000690: vehicle type mismatch
+TR-2026-00067,67,ML068346,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Bus, detected Bike",ANPR ANPR-000688: vehicle type mismatch
+TR-2026-00068,68,ML08C8061,30,MEDIUM,VERIFY,FASTag status: BLACKLISTED,
+TR-2026-00069,69,MN01G0297,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Truck, detected Bike",ANPR ANPR-000681: vehicle type mismatch
+TR-2026-00070,70,PB10CK5005,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Car, detected Bike",ANPR ANPR-000699: vehicle type mismatch
+TR-2026-00071,71,SK01PA4521,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Car, detected Bike",ANPR ANPR-000691: vehicle type mismatch
+TR-2026-00072,72,TR01N0481,30,MEDIUM,VERIFY,FASTag status: BLACKLISTED,
+TR-2026-00073,73,TR07D0569,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Mini Truck, detected Bike",ANPR ANPR-000682: vehicle type mismatch
+TR-2026-00074,74,TS08FQ1262,30,MEDIUM,VERIFY,FASTag status: INACTIVE,
+TR-2026-00075,75,UK06J3953,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Mini Truck, detected Bike",ANPR ANPR-000684: vehicle type mismatch
+TR-2026-00076,76,UP11AY0646,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Car, detected Bike",ANPR ANPR-000693: vehicle type mismatch
+TR-2026-00077,77,UP14AF3804,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Car, detected Bike",ANPR ANPR-000692: vehicle type mismatch
+TR-2026-00078,78,UP14AX9754,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Bike, detected Truck",ANPR ANPR-000697: vehicle type mismatch
+TR-2026-00079,79,WB02AH4655,30,MEDIUM,VERIFY,"Vehicle type mismatch: registered Bike, detected Truck",ANPR ANPR-000696: vehicle type mismatch
+TR-2026-00080,80,WB06J2192,30,MEDIUM,VERIFY,Fitness certificate expired,
+TR-2026-00081,81,ML06A1659,25,LOW,VERIFY,Fitness certificate expired | Registry status is suspended,
+TR-2026-00082,82,AN01D4163,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00083,83,AP07AN3915,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00084,84,AP31DF2833,20,LOW,VERIFY,"Colour mismatch: registered Red, detected Blue",ANPR ANPR-000710: colour mismatch
+TR-2026-00085,85,AR01C5723,20,LOW,VERIFY,"Colour mismatch: registered Red, detected Blue",ANPR ANPR-000705: colour mismatch
+TR-2026-00086,86,AR152019,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00087,87,CG04HD6930,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00088,88,CG04HV7009,20,LOW,VERIFY,"Colour mismatch: registered Grey, detected Red",ANPR ANPR-000715: colour mismatch
+TR-2026-00089,89,CG13AE4060,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00090,90,CH01AL4920,20,LOW,VERIFY,"Colour mismatch: registered Red, detected Blue",ANPR ANPR-000706: colour mismatch
+TR-2026-00091,91,DL2CH8634,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00092,92,DL40NA7238,20,LOW,VERIFY,Fitness certificate expired | FASTag status: KYC_PENDING,
+TR-2026-00093,93,DN0901438,20,LOW,VERIFY,"Colour mismatch: registered Silver, detected Red",ANPR ANPR-000711: colour mismatch
+TR-2026-00094,94,GJ06DQ3712,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00095,95,HR26BQ8176,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00096,96,HR26BY4812,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00097,97,HR29W8286,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00098,98,JH01BC5210,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00099,99,JH02AD2533,20,LOW,VERIFY,"Colour mismatch: registered Grey, detected Red",ANPR ANPR-000704: colour mismatch
+TR-2026-00100,100,JH05Y9636,20,LOW,VERIFY,"Colour mismatch: registered Blue, detected Red",ANPR ANPR-000712: colour mismatch
+TR-2026-00101,101,JK02AJ1525,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00102,102,KA51P7755,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00103,103,MH36H5700,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00104,104,ML05J8950,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00105,105,ML05R1934,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00106,106,NL02C3947,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00107,107,OD02J0435,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00108,108,OD11P6123,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00109,109,OR14U8730,20,LOW,VERIFY,"Colour mismatch: registered Black, detected Red",ANPR ANPR-000707: colour mismatch
+TR-2026-00110,110,PB06AN6162,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00111,111,PB08DT7342,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00112,112,PB10CQ0006,20,LOW,VERIFY,"Colour mismatch: registered Silver, detected Red",ANPR ANPR-000717: colour mismatch
+TR-2026-00113,113,PY01AH9067,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00114,114,PY01CG2929,20,LOW,VERIFY,"Colour mismatch: registered Blue, detected Red",ANPR ANPR-000713: colour mismatch
+TR-2026-00115,115,RJ23CB2272,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00116,116,TN02AU9295,20,LOW,VERIFY,"Colour mismatch: registered Silver, detected Red",ANPR ANPR-000709: colour mismatch
+TR-2026-00117,117,TN19Q0835,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00118,118,TR01X0482,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00119,119,TR03F0375,20,LOW,VERIFY,"Colour mismatch: registered Silver, detected Red",ANPR ANPR-000708: colour mismatch
+TR-2026-00120,120,TR03H0259,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00121,121,TS09EZ9296,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00122,122,UP16AJ0704,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00123,123,UP32HY6077,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00124,124,UP45Q3028,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00125,125,WB02AA5580,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00126,126,WB061061,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00127,127,WB171717,20,LOW,VERIFY,Commercial permit expired,
+TR-2026-00128,128,AP31TV6847,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00129,129,AS01DS7523,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00130,130,CG07R2684,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00131,131,JK01M4723,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00132,132,KL46R3613,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00133,133,PY01Q7947,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00134,134,SK02P3471,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00135,135,TS09UA7948,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00136,136,WB06G4120,15,LOW,VERIFY,Registry status is suspended,
+TR-2026-00137,137,AN01L6155,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00138,138,AP05DY3395,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00139,139,AP26AM1260,10,LOW,VERIFY,Commercial permit expired,
+TR-2026-00140,140,AP31TP2282,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00141,141,AP39JJ5441,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00142,142,AR200692,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00143,143,AS01BF9673,10,LOW,VERIFY,FASTag status: KYC_PENDING,
+TR-2026-00144,144,AS07AC6653,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00145,145,BR01BR5435,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00146,146,CG16B1802,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00147,147,DL10C05520,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00148,148,DL10CA0986,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00149,149,DL12CN8660,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00150,150,DL12CS7886,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00151,151,DL3CCK8019,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00152,152,DL5CH7599,10,LOW,VERIFY,FASTag status: BLACKLISTED,
+TR-2026-00153,153,DN0909704,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00154,154,GA01C2098,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00155,155,GA03R9230,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00156,156,GJ01KC9959,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00157,157,GJ06HS1855,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00158,158,HP302165,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00159,159,HP48B2252,10,LOW,VERIFY,FASTag status: BLACKLISTED,
+TR-2026-00160,160,HP52B5958,10,LOW,VERIFY,FASTag status: KYC_PENDING,
+TR-2026-00161,161,HP54C6564,10,LOW,VERIFY,FASTag status: KYC_PENDING,
+TR-2026-00162,162,HR01H4731,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00163,163,HR10AE9885,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00164,164,JH01DB1881,10,LOW,VERIFY,FASTag status: KYC_PENDING,
+TR-2026-00165,165,JH05S3291,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00166,166,JK01R8021,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00167,167,JK02ACB876,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00168,168,JK02AG2454,10,LOW,VERIFY,FASTag status: KYC_PENDING,
+TR-2026-00169,169,JK02CC0447,10,LOW,VERIFY,FASTag status: KYC_PENDING,
+TR-2026-00170,170,JK10A5217,10,LOW,VERIFY,FASTag status: BLACKLISTED,
+TR-2026-00171,171,JK10B2313,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00172,172,JK1182360,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00173,173,KA04MK312,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00174,174,KA06C9590,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00175,175,KA51ML4025,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00176,176,MH02DN7410,10,LOW,VERIFY,FASTag status: KYC_PENDING,
+TR-2026-00177,177,ML05H6564,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00178,178,ML08E9223,10,LOW,VERIFY,FASTag status: BLACKLISTED,
+TR-2026-00179,179,MP04CL8840,10,LOW,VERIFY,Commercial permit expired,
+TR-2026-00180,180,MP20TA0919,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00181,181,OD05K6964,10,LOW,VERIFY,Commercial permit expired,
+TR-2026-00182,182,OR02BV0701,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00183,183,PB65AN2583,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00184,184,RJ20UB0137,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00185,185,TS07EL3335,10,LOW,VERIFY,Fitness certificate expired,
+TR-2026-00186,186,TS15ES0894,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00187,187,UK07AM5665,10,LOW,VERIFY,FASTag status: BLACKLISTED,
+TR-2026-00188,188,UK07BK5014,10,LOW,VERIFY,FASTag status: KYC_PENDING,
+TR-2026-00189,189,UP32KW7325,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00190,190,WB26T6688,10,LOW,VERIFY,FASTag status: INACTIVE,
+TR-2026-00191,191,WB36G6682,10,LOW,VERIFY,Fitness certificate expired,
