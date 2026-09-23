@@ -1,0 +1,15 @@
+TRUSTRAK AI DATASET VALIDATION
+========================================
+
+Images found: 602
+XML labels found: 603
+CSV records: 603
+
+STATUS COUNTS
+----------------------------------------
+MISSING_IMAGE: 1
+OK: 602
+
+EXTRA XML FILES WITHOUT CSV RECORD
+----------------------------------------
+None

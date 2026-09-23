@@ -1,0 +1,11 @@
+{
+  "images_found": 602,
+  "xml_labels_found": 603,
+  "csv_records": 603,
+  "extra_xml_without_csv_record": 0,
+  "extra_xml_files": [],
+  "status_counts": {
+    "OK": 602,
+    "MISSING_IMAGE": 1
+  }
+}

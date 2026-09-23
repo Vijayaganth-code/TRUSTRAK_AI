@@ -1,0 +1,395 @@
+from datetime import datetime
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from backend.database import get_db
+from backend.models import ANPREvent, FASTagEvent, Vehicle
+
+
+router = APIRouter(
+    prefix="/api/correlation",
+    tags=["Correlation"],
+)
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def location_matches(
+    anpr_location: str,
+    toll_plaza: str,
+) -> bool:
+    anpr = anpr_location.strip().lower()
+    toll = toll_plaza.strip().lower()
+
+    return (
+        anpr in toll
+        or toll.startswith(anpr)
+        or f"{anpr} toll plaza" == toll
+    )
+
+
+def time_difference_minutes(
+    first: datetime,
+    second: datetime,
+) -> float:
+    return abs(
+        (first - second).total_seconds()
+    ) / 60.0
+
+
+def build_signals(
+    anpr_event: ANPREvent,
+    fastag_event: FASTagEvent,
+    vehicle: Optional[Vehicle],
+):
+    # -----------------------------------------------------
+    # Registration match
+    # -----------------------------------------------------
+
+    plate_match = (
+        anpr_event.registration_number.strip().upper()
+        == fastag_event.registration_number.strip().upper()
+    )
+
+    # -----------------------------------------------------
+    # FASTag registry match
+    # -----------------------------------------------------
+
+    fastag_registry_match = False
+
+    if vehicle:
+        fastag_registry_match = (
+            vehicle.fastag_id.strip().upper()
+            == fastag_event.fastag_id.strip().upper()
+        )
+
+    # -----------------------------------------------------
+    # Location match
+    # -----------------------------------------------------
+
+    location_match = location_matches(
+        anpr_event.location,
+        fastag_event.toll_plaza,
+    )
+
+    # -----------------------------------------------------
+    # Time proximity
+    # -----------------------------------------------------
+
+    minutes = time_difference_minutes(
+        anpr_event.timestamp,
+        fastag_event.timestamp,
+    )
+
+    # FASTag must occur at or before the ANPR event
+    # and must be within the 60-minute correlation window.
+    fastag_after_anpr = (
+        fastag_event.timestamp
+        > anpr_event.timestamp
+    )
+
+    time_proximity = (
+        minutes <= 60
+        and not fastag_after_anpr
+    ) 
+
+    # -----------------------------------------------------
+    # Transaction status
+    # -----------------------------------------------------
+
+    transaction_success = (
+        fastag_event.transaction_status.strip().upper()
+        == "SUCCESS"
+    )
+
+    return {
+        "plate_match": plate_match,
+        "fastag_registry_match": fastag_registry_match,
+        "location_match": location_match,
+        "time_difference_minutes": round(minutes, 2),
+        "within_60_minute_window": time_proximity,
+        "fastag_after_anpr": fastag_after_anpr,
+        "temporally_valid": time_proximity,
+        "transaction_success": transaction_success,
+    }
+
+
+# =========================================================
+# CORRELATE ONE ANPR EVENT
+# =========================================================
+
+@router.get("/anpr/{event_id}")
+def correlate_anpr_event(
+    event_id: str,
+    db: Session = Depends(get_db),
+):
+    anpr_event = (
+        db.query(ANPREvent)
+        .filter(
+            ANPREvent.event_id == event_id
+        )
+        .first()
+    )
+
+    if anpr_event is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "ANPR event not found",
+                "event_id": event_id,
+            },
+        )
+
+    plate = (
+        anpr_event.registration_number
+        .strip()
+        .upper()
+    )
+
+    # -----------------------------------------------------
+    # Registry
+    # -----------------------------------------------------
+
+    vehicle = (
+        db.query(Vehicle)
+        .filter(
+            Vehicle.registration_number == plate
+        )
+        .first()
+    )
+
+    # -----------------------------------------------------
+    # Candidate FASTag events
+    # -----------------------------------------------------
+
+    fastag_events = (
+        db.query(FASTagEvent)
+        .filter(
+            FASTagEvent.registration_number == plate
+        )
+        .order_by(
+            FASTagEvent.timestamp.asc()
+        )
+        .all()
+    )
+
+    correlations = []
+
+    for fastag_event in fastag_events:
+
+        signals = build_signals(
+            anpr_event,
+            fastag_event,
+            vehicle,
+        )
+
+        # -------------------------------------------------
+        # Correlation strength
+        # -------------------------------------------------
+
+        matched_signals = sum(
+            [
+                signals["plate_match"],
+                signals["fastag_registry_match"],
+                signals["location_match"],
+                signals["within_60_minute_window"],
+                signals["transaction_success"],
+            ]
+        )
+
+        correlations.append(
+            {
+                "transaction_id": (
+                    fastag_event.transaction_id
+                ),
+                "fastag_id": fastag_event.fastag_id,
+                "toll_plaza": fastag_event.toll_plaza,
+                "timestamp": fastag_event.timestamp,
+                "transaction_status": (
+                    fastag_event.transaction_status
+                ),
+                "amount": fastag_event.amount,
+                "signals": signals,
+                "matched_signal_count": matched_signals,
+            }
+        )
+
+    # Strongest candidate first
+        correlations.sort(
+            key=lambda item: (
+                item["signals"]["temporally_valid"],
+                item["matched_signal_count"],
+                -item["signals"][
+                    "time_difference_minutes"
+                ],
+            ),
+            reverse=True,
+        )
+
+    best_match = (
+        correlations[0]
+        if correlations
+        else None
+    )
+
+    return {
+        "anpr_event": {
+            "event_id": anpr_event.event_id,
+            "registration_number": (
+                anpr_event.registration_number
+            ),
+            "camera_id": anpr_event.camera_id,
+            "location": anpr_event.location,
+            "timestamp": anpr_event.timestamp,
+            "detected_vehicle_type": (
+                anpr_event.detected_vehicle_type
+            ),
+            "detected_colour": (
+                anpr_event.detected_colour
+            ),
+            "ocr_confidence": (
+                anpr_event.ocr_confidence
+            ),
+        },
+        "registry_match": vehicle is not None,
+        "vehicle": (
+            {
+                "vehicle_id": vehicle.vehicle_id,
+                "registration_number": (
+                    vehicle.registration_number
+                ),
+                "fastag_id": vehicle.fastag_id,
+                "fastag_status": vehicle.fastag_status,
+                "vehicle_type": vehicle.vehicle_type,
+                "operator": vehicle.operator,
+            }
+            if vehicle
+            else None
+        ),
+        "fastag_candidates": correlations,
+        "best_match": best_match,
+    }
+
+
+# =========================================================
+# CORRELATE A VEHICLE
+# =========================================================
+
+@router.get("/{registration_number}")
+def correlate_vehicle(
+    registration_number: str,
+    db: Session = Depends(get_db),
+):
+    plate = registration_number.strip().upper()
+
+    vehicle = (
+        db.query(Vehicle)
+        .filter(
+            Vehicle.registration_number == plate
+        )
+        .first()
+    )
+
+    anpr_events = (
+        db.query(ANPREvent)
+        .filter(
+            ANPREvent.registration_number == plate
+        )
+        .order_by(
+            ANPREvent.timestamp.desc()
+        )
+        .all()
+    )
+
+    fastag_events = (
+        db.query(FASTagEvent)
+        .filter(
+            FASTagEvent.registration_number == plate
+        )
+        .order_by(
+            FASTagEvent.timestamp.desc()
+        )
+        .all()
+    )
+
+    if not anpr_events:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "No ANPR events found",
+                "registration_number": plate,
+            },
+        )
+
+    results = []
+
+    for anpr_event in anpr_events:
+
+        candidates = []
+
+        for fastag_event in fastag_events:
+
+            signals = build_signals(
+                anpr_event,
+                fastag_event,
+                vehicle,
+            )
+
+            matched_signals = sum(
+                [
+                    signals["plate_match"],
+                    signals["fastag_registry_match"],
+                    signals["location_match"],
+                    signals["within_60_minute_window"],
+                    signals["transaction_success"],
+                ]
+            )
+
+            candidates.append(
+                {
+                    "transaction_id": (
+                        fastag_event.transaction_id
+                    ),
+                    "fastag_id": fastag_event.fastag_id,
+                    "toll_plaza": fastag_event.toll_plaza,
+                    "timestamp": fastag_event.timestamp,
+                    "signals": signals,
+                    "matched_signal_count": matched_signals,
+                }
+            )
+
+        candidates.sort(
+            key=lambda item: (
+                item["signals"]["temporally_valid"],
+                item["matched_signal_count"],
+                -item["signals"][
+                    "time_difference_minutes"
+                ],
+            ),
+            reverse=True,
+        )
+
+        results.append(
+            {
+                "anpr_event_id": anpr_event.event_id,
+                "anpr_location": anpr_event.location,
+                "anpr_timestamp": anpr_event.timestamp,
+                "best_fastag_match": (
+                    candidates[0]
+                    if candidates
+                    else None
+                ),
+            }
+        )
+
+    return {
+        "registration_number": plate,
+        "registry_match": vehicle is not None,
+        "anpr_event_count": len(anpr_events),
+        "fastag_event_count": len(fastag_events),
+        "correlations": results,
+    }

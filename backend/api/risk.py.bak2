@@ -1,0 +1,347 @@
+import csv
+from pathlib import Path
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from backend.database import SessionLocal
+from backend.models import VerificationCase
+from algorithms import risk_engine
+from backend.services.live_risk import evaluate_live_risk
+
+
+router = APIRouter(
+    prefix="/api/risk",
+    tags=["Risk Engine"],
+)
+
+# =========================================================
+# VERIFICATION STATUS UPDATE
+# =========================================================
+
+class CaseStatusUpdate(BaseModel):
+    status: Literal[
+        "UNDER_REVIEW",
+        "VERIFIED",
+        "FALSE_POSITIVE",
+        "CLOSED",
+    ]
+ALLOWED_STATUS_TRANSITIONS = {
+    "VERIFY": {
+        "UNDER_REVIEW",
+    },
+    "UNDER_REVIEW": {
+        "VERIFIED",
+        "FALSE_POSITIVE",
+    },
+    "VERIFIED": {
+        "CLOSED",
+    },
+    "FALSE_POSITIVE": {
+        "CLOSED",
+    },
+    "CLOSED": set(),
+}
+
+
+# =========================================================
+# DATABASE SESSION
+# =========================================================
+
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# =========================================================
+# CONVERT DATABASE CASE TO JSON
+# =========================================================
+
+def case_to_dict(case: VerificationCase):
+    return {
+        "case_id": case.case_id,
+        "rank": case.rank,
+        "registration_number": case.registration_number,
+        "risk_score": case.risk_score,
+        "risk_tier": case.risk_tier,
+        "status": case.status,
+        "reasons": case.reasons,
+        "evidence": case.evidence,
+    }
+
+
+# =========================================================
+# SYNC GENERATED CSV → DATABASE
+# =========================================================
+
+def sync_verification_cases(db: Session) -> int:
+    output_file = Path(risk_engine.OUTPUT_FILE)
+
+    if not output_file.exists():
+        raise FileNotFoundError(
+            f"Verification output file not found: {output_file}"
+        )
+
+    imported_cases = []
+
+    with output_file.open(
+        "r",
+        encoding="utf-8",
+        newline=""
+    ) as file:
+
+        reader = csv.DictReader(file)
+
+        for row in reader:
+
+            if not row.get("registration_number"):
+                continue
+
+            imported_cases.append(
+                VerificationCase(
+                    case_id=row["case_id"],
+                    rank=int(row["rank"]),
+                    registration_number=row[
+                        "registration_number"
+                    ],
+                    risk_score=int(row["risk_score"]),
+                    risk_tier=row["risk_tier"],
+                    status=row["status"],
+                    reasons=row.get("reasons", ""),
+                    evidence=row.get("evidence", ""),
+                )
+            )
+
+    # Replace the current verification queue
+    # with the latest DSA engine result.
+    db.query(VerificationCase).delete(
+        synchronize_session=False
+    )
+
+    db.bulk_save_objects(imported_cases)
+    db.commit()
+
+    return len(imported_cases)
+
+
+# =========================================================
+# RUN RISK ENGINE
+# =========================================================
+
+@router.post("/run")
+def run_risk_engine(
+    db: Session = Depends(get_db),
+):
+    try:
+
+        # Run the existing DSA risk engine.
+        risk_engine.main()
+
+        # Import newly generated cases.
+        case_count = sync_verification_cases(db)
+
+        # Retrieve prioritized cases.
+        cases = (
+            db.query(VerificationCase)
+            .order_by(VerificationCase.rank.asc())
+            .limit(10)
+            .all()
+        )
+
+        return {
+            "success": True,
+            "message": "Risk engine completed successfully.",
+            "verification_cases": case_count,
+            "top_priority_cases": [
+                case_to_dict(case)
+                for case in cases
+            ],
+        }
+
+    except Exception as error:
+
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(error),
+        )
+
+
+# =========================================================
+# GET VERIFICATION QUEUE
+# =========================================================
+
+@router.get("/cases")
+def get_verification_cases(
+    limit: int = Query(
+        20,
+        ge=1,
+        le=100,
+    ),
+    db: Session = Depends(get_db),
+):
+
+    cases = (
+        db.query(VerificationCase)
+        .order_by(
+            VerificationCase.rank.asc()
+        )
+        .limit(limit)
+        .all()
+    )
+
+    total = (
+        db.query(VerificationCase)
+        .count()
+    )
+
+    return {
+        "total_cases": total,
+        "returned_cases": len(cases),
+        "cases": [
+            case_to_dict(case)
+            for case in cases
+        ],
+    }
+
+
+# =========================================================
+# GET CASE BY VEHICLE
+# =========================================================
+
+@router.get("/cases/{registration_number}")
+def get_vehicle_risk_case(
+    registration_number: str,
+    db: Session = Depends(get_db),
+):
+
+    registration_number = (
+        registration_number
+        .strip()
+        .upper()
+    )
+
+    case = (
+        db.query(VerificationCase)
+        .filter(
+            VerificationCase.registration_number
+            == registration_number
+        )
+        .first()
+    )
+
+    if case is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"No verification case found for "
+                f"{registration_number}"
+            ),
+        )
+
+    return case_to_dict(case)
+# =========================================================
+# LIVE DATABASE RISK EVALUATION
+# =========================================================
+
+@router.get("/live/{registration_number}")
+def get_live_risk(
+    registration_number: str,
+    db: Session = Depends(get_db),
+):
+    registration_number = (
+        registration_number
+        .strip()
+        .upper()
+    )
+
+    try:
+        return evaluate_live_risk(
+            db,
+            registration_number,
+        )
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=str(error),
+        )
+# =========================================================
+# UPDATE VERIFICATION CASE STATUS
+# =========================================================
+
+@router.patch("/cases/{case_id}")
+def update_case_status(
+    case_id: str,
+    status_data: CaseStatusUpdate,
+    db: Session = Depends(get_db),
+):
+    case = (
+        db.query(VerificationCase)
+        .filter(
+            VerificationCase.case_id
+            == case_id.strip().upper()
+        )
+        .first()
+    )
+
+    if case is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Verification case "
+                f"{case_id} not found"
+            ),
+        )
+
+    current_status = (
+        case.status.strip().upper()
+        if case.status
+        else "VERIFY"
+    )
+
+    new_status = (
+        status_data.status.strip().upper()
+    )
+
+    allowed = ALLOWED_STATUS_TRANSITIONS.get(
+        current_status,
+        set(),
+    )
+
+    if new_status not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": (
+                    "Invalid verification status "
+                    "transition"
+                ),
+                "case_id": case.case_id,
+                "current_status": current_status,
+                "requested_status": new_status,
+                "allowed_next_statuses": sorted(
+                    allowed
+                ),
+            },
+        )
+
+    case.status = new_status
+
+    db.commit()
+    db.refresh(case)
+
+    return {
+        "success": True,
+        "message": (
+            "Verification case status updated"
+        ),
+        "case": case_to_dict(case),
+    }
