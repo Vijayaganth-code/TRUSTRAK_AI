@@ -3161,7 +3161,7 @@
       rows.sort((a,b)=>new Date(b.timestamp||0)-new Date(a.timestamp||0));
       const visible=rows.slice(0,20);
       const exceptionCount=visible.filter(e=>e.transactionStatus && e.transactionStatus!=='SUCCESS' || e.eventType!=='NORMAL').length;
-      const activeTagSet=new Set(results.filter(r=>r.vehicleStatus==='ACTIVE' && r.vehicle?.fastag_id).map(r=>r.vehicle.fastag_id));
+      const activeTagSet=new Set(results.filter(r=>String(r.vehicle?.fastag_status||'').toUpperCase()==='ACTIVE' && r.vehicle?.fastag_id).map(r=>r.vehicle.fastag_id));
       const amounts=visible.map(e=>e.amount).filter(n=>Number.isFinite(n) && n>0);
       const avg=amounts.length ? Math.round(amounts.reduce((a,b)=>a+b,0)/amounts.length) : 0;
 
@@ -3230,347 +3230,111 @@
   }
 
   /* ---------- graph analysis ---------- */
-  /* ---------- live graph analysis ---------- */
-
-  function graphSafe(value){
-    return String(value ?? '').replace(/[&<>"']/g, ch => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[ch]));
+  function computeSuspiciousClusters(){
+    const byOperator = {};
+    CASES.forEach(c => {
+      const reg = VEHICLE_REGISTRY[c.plate];
+      if(!reg) return;
+      (byOperator[reg.operator] = byOperator[reg.operator] || []).push(c);
+    });
+    return Object.keys(byOperator).filter(op => byOperator[op].length > 1).map(op => ({ operator:op, cases:byOperator[op] }));
   }
-
-  function graphFmtTime(value){
-    if(!value) return '—';
-    const d = new Date(value);
-    return Number.isNaN(d.getTime())
-      ? String(value)
-      : d.toLocaleString('en-GB', {
-          hour:'2-digit',
-          minute:'2-digit',
-          day:'2-digit',
-          month:'short'
-        });
-  }
-
-  async function loadGraphVehicle(plate){
-    const normalized = String(plate || '').trim().toUpperCase();
-    if(!normalized) throw new Error('Vehicle registration is required.');
-
-    const [vehicleRes, riskRes, anprRes] = await Promise.all([
-      window.TRUSTRAK_API.get('/api/vehicles/' + encodeURIComponent(normalized)),
-      window.TRUSTRAK_API.get('/api/risk/live/' + encodeURIComponent(normalized)).catch(() => null),
-      window.TRUSTRAK_API.get('/api/anpr/events?limit=500')
-    ]);
-
-    const vehicle = vehicleRes?.vehicle || vehicleRes || null;
-    const events = (anprRes?.events || [])
-      .filter(e => String(e.registration_number || '').trim().toUpperCase() === normalized)
-      .sort((a,b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))
-      .slice(0, 8);
-
-    return {
-      plate: normalized,
-      vehicle,
-      risk: riskRes,
-      events
-    };
-  }
-
-  async function loadLiveGraphCases(){
-    const data = await window.TRUSTRAK_API.get('/api/risk/cases?limit=100');
-    return Array.isArray(data?.cases) ? data.cases : [];
-  }
-
-  async function renderClusterPanel(){
+  function renderClusterPanel(){
+    const clusters = computeSuspiciousClusters();
     const panel = document.getElementById("clusterPanel");
-    if(!panel) return;
-
-    panel.innerHTML = `
+    const head = `
       <div class="panel-head">
         <div>
           <div class="panel-title">Suspicious clusters</div>
-          <div class="panel-caption">Live flagged vehicles grouped by registered operator — requires investigation, not an accusation</div>
+          <div class="panel-caption">Operators linked to more than one flagged vehicle — requires investigation, not an accusation</div>
         </div>
-      </div>
-      <div class="panel-body">
-        <div class="cluster-empty">Loading live risk cases…</div>
       </div>`;
-
-    try{
-      const cases = await loadLiveGraphCases();
-      const topCases = cases.slice(0, 30);
-
-      const enriched = await Promise.all(
-        topCases.map(async c => {
-          try{
-            const result = await window.TRUSTRAK_API.get(
-              '/api/vehicles/' + encodeURIComponent(c.registration_number)
-            );
-            return {
-              case: c,
-              vehicle: result?.vehicle || result || null
-            };
-          }catch(_){
-            return { case:c, vehicle:null };
-          }
-        })
-      );
-
-      const groups = {};
-      enriched.forEach(item => {
-        const operator = item.vehicle?.operator;
-        if(!operator) return;
-        if(!groups[operator]) groups[operator] = [];
-        groups[operator].push(item);
-      });
-
-      const clusters = Object.entries(groups)
-        .filter(([, items]) => items.length > 1)
-        .sort((a,b) => b[1].length - a[1].length);
-
-      if(!clusters.length){
-        panel.innerHTML = `
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Suspicious clusters</div>
-              <div class="panel-caption">Live flagged vehicles grouped by registered operator</div>
-            </div>
-          </div>
-          <div class="panel-body">
-            <div class="cluster-empty">No shared-operator clusters found in the current live case sample.</div>
-          </div>`;
-        return;
-      }
-
-      panel.innerHTML = `
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Suspicious clusters</div>
-            <div class="panel-caption">Live flagged vehicles grouped by registered operator — requires investigation, not an accusation</div>
-          </div>
-        </div>
-        <div class="panel-body">
-          ${clusters.map(([operator, items]) => `
-            <div class="cluster-card">
-              <div class="cc-title">${graphSafe(operator)}</div>
-              <div class="cc-meta">
-                ${items.length} flagged vehicles under this operator:
-                ${items.map(item =>
-                  `${graphSafe(item.case.registration_number)} (risk ${graphSafe(item.case.risk_score)})`
-                ).join(', ')}
-              </div>
-            </div>
-          `).join('')}
-        </div>`;
-    }catch(err){
-      panel.innerHTML = `
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Suspicious clusters</div>
-            <div class="panel-caption">Live backend graph data</div>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div class="cluster-empty" style="color:var(--red)">
-            Unable to load live graph clusters.
-          </div>
-        </div>`;
-      console.error('Live graph cluster load failed:', err);
+    if(!clusters.length){
+      panel.innerHTML = head + `<div class="panel-body"><div class="cluster-empty">No shared-operator clusters detected in the current case set.</div></div>`;
+      return;
     }
+    panel.innerHTML = head + `<div class="panel-body">` + clusters.map(cl => `
+      <div class="cluster-card">
+        <div class="cc-title">${cl.operator}</div>
+        <div class="cc-meta">${cl.cases.length} flagged vehicles under this operator: ${cl.cases.map(c=>c.plate+" (risk "+c.risk+")").join(", ")}</div>
+      </div>
+    `).join("") + `</div>`;
   }
-
-  function buildLiveGraphModel(ctx){
-    const vehicle = ctx.vehicle || {};
-    const nodes = [
-      {id:"vehicle", label:ctx.plate, x:240, y:42, color:"var(--gold-bright)", r:10},
-      {id:"operator", label:vehicle.operator || "Operator unavailable", x:410, y:42, color:"var(--blue)", r:8},
-      {id:"fastag", label:vehicle.fastag_id || "FASTag unavailable", x:70, y:42, color:"var(--purple)", r:8},
-      {id:"permit", label:"Permit: " + (vehicle.permit_status || "—"), x:240, y:118,
-        color:String(vehicle.permit_status || "").toUpperCase() === "VALID" ? "var(--green)" : "var(--red)", r:8},
-      {id:"fitness", label:"Fitness: " + (vehicle.fitness_status || "—"), x:240, y:168,
-        color:String(vehicle.fitness_status || "").toUpperCase() === "VALID" ? "var(--green)" : "var(--red)", r:8}
-    ];
-
-    const edges = [
-      {a:"vehicle",b:"operator",bad:false},
-      {a:"vehicle",b:"fastag",bad:false},
-      {a:"vehicle",b:"permit",bad:String(vehicle.permit_status || "").toUpperCase() !== "VALID"},
-      {a:"vehicle",b:"fitness",bad:String(vehicle.fitness_status || "").toUpperCase() !== "VALID"}
-    ];
-
-    const seenLocations = new Set();
-    (ctx.events || []).slice(0, 4).forEach((event, index) => {
-      const location = event.location || "Unknown";
-      const key = String(location).toUpperCase();
-      if(seenLocations.has(key)) return;
-      seenLocations.add(key);
-
-      const id = "sight" + index;
-      const x = 90 + index * 110;
-      const y = 222;
-
-      nodes.push({
-        id,
-        label:location,
-        x,
-        y,
-        color:"var(--text-2)",
-        r:6
-      });
-
-      edges.push({
-        a:"vehicle",
-        b:id,
-        bad:false
-      });
+  function buildRelationshipGraph(){
+    const adj = {};
+    function addEdge(a,b){ (adj[a]=adj[a]||new Set()).add(b); (adj[b]=adj[b]||new Set()).add(a); }
+    Object.keys(VEHICLE_REGISTRY).forEach(plate => {
+      const reg = VEHICLE_REGISTRY[plate];
+      addEdge("Vehicle:"+plate, "Operator:"+reg.operator);
+      addEdge("Vehicle:"+plate, "FASTag:"+reg.fastag.split(" / ")[0]);
     });
-
-    return {nodes, edges};
+    return adj;
   }
-
-  function renderLiveGraph(ctx){
-    const wrap = document.getElementById("graphSvgWrap");
-    const trace = document.getElementById("bfsTrace");
-    if(!wrap || !trace) return;
-
-    const model = buildLiveGraphModel(ctx);
-    const byId = Object.fromEntries(model.nodes.map(n => [n.id, n]));
-
-    let svg = `<svg viewBox="0 0 480 255" style="width:100%;max-width:480px;height:auto;">`;
-
-    model.edges.forEach(edge => {
-      const a = byId[edge.a];
-      const b = byId[edge.b];
-      if(!a || !b) return;
-
-      svg += `
-        <line
-          x1="${a.x}" y1="${a.y}"
-          x2="${b.x}" y2="${b.y}"
-          stroke="${edge.bad ? 'var(--red)' : 'var(--border-glass)'}"
-          stroke-width="${edge.bad ? 2 : 1.5}"
-          ${edge.bad ? 'stroke-dasharray="4 3"' : ''}
-        />`;
-    });
-
-    model.nodes.forEach(node => {
-      svg += `
-        <circle cx="${node.x}" cy="${node.y}" r="${node.r}" fill="${node.color}"></circle>
-        <text
-          x="${node.x}"
-          y="${node.y - node.r - 7}"
-          text-anchor="middle"
-          font-size="9.5"
-          fill="var(--text-1)"
-          font-family="Inter, sans-serif"
-        >${graphSafe(node.label)}</text>`;
-    });
-
-    svg += `</svg>`;
-    wrap.innerHTML = svg;
-
-    const adjacency = {};
-    function addEdge(a,b){
-      (adjacency[a] ||= new Set()).add(b);
-      (adjacency[b] ||= new Set()).add(a);
-    }
-    model.edges.forEach(e => addEdge(e.a, e.b));
-
-    const visited = new Set(["vehicle"]);
-    const queue = [["vehicle",0]];
-    const order = [];
-
+  function bfsFrom(adj, start, maxDepth){
+    const visited = new Set([start]);
+    const order = [start];
+    let queue = [[start,0]];
     while(queue.length){
       const [node, depth] = queue.shift();
-      order.push(node);
-      if(depth >= 2) continue;
-
-      (adjacency[node] || new Set()).forEach(next => {
-        if(!visited.has(next)){
-          visited.add(next);
-          queue.push([next, depth + 1]);
-        }
+      if(depth >= maxDepth) continue;
+      (adj[node] || new Set()).forEach(n => {
+        if(!visited.has(n)){ visited.add(n); order.push(n); queue.push([n, depth+1]); }
       });
     }
-
-    const labels = order.map(id => {
-      if(id === "vehicle") return ctx.plate;
-      if(id === "operator") return ctx.vehicle?.operator || "Operator";
-      if(id === "fastag") return ctx.vehicle?.fastag_id || "FASTag";
-      if(id === "permit") return "Permit";
-      if(id === "fitness") return "Fitness";
-      return byId[id]?.label || id;
-    });
-
-    trace.textContent =
-      "BFS traversal (depth 2): " + labels.join(" → ");
+    return order;
   }
-
+  function buildVehicleGraphSVG(plate){
+    const reg = VEHICLE_REGISTRY[plate];
+    const c = getCaseForPlate(plate);
+    const nodes = [
+      { id:"vehicle", label:plate, x:240, y:40, color:"var(--gold-bright)", r:8 },
+      { id:"operator", label:reg.operator, x:400, y:40, color:"var(--blue)", r:7 },
+      { id:"fastag", label:reg.fastag.split(" / ")[0], x:80, y:40, color:"var(--purple)", r:7 },
+      { id:"permit", label:"Permit: "+reg.permit, x:240, y:120, color:reg.permit==='Valid'?"var(--green)":"var(--red)", r:7 }
+    ];
+    let edges = [
+      { a:"vehicle", b:"operator", bad:false },
+      { a:"vehicle", b:"fastag", bad: !!(c && c.fastagObserved) },
+      { a:"vehicle", b:"permit", bad: reg.permit !== "Valid" }
+    ];
+    if(c){
+      c.sightings.forEach((s,i) => {
+        const nx = 140 + i*180;
+        const anomalous = i === 1 && !!c.travel;
+        nodes.push({ id:"sight"+i, label:s.loc, x:nx, y:200, color: anomalous ? "var(--red)" : "var(--text-2)", r:6 });
+        edges.push({ a:"vehicle", b:"sight"+i, bad:anomalous });
+      });
+    }
+    const byId = {}; nodes.forEach(n => byId[n.id]=n);
+    let svg = `<svg viewBox="0 0 480 240" style="width:100%; max-width:480px; height:auto;">`;
+    edges.forEach(e => {
+      const a = byId[e.a], b = byId[e.b];
+      svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${e.bad?'var(--red)':'var(--border-glass)'}" stroke-width="${e.bad?2:1.5}" ${e.bad?'stroke-dasharray="4 3"':''}/>`;
+    });
+    nodes.forEach(n => {
+      svg += `<circle cx="${n.x}" cy="${n.y}" r="${n.r}" fill="${n.color}"/>`;
+      svg += `<text x="${n.x}" y="${n.y - n.r - 6}" text-anchor="middle" font-size="10" fill="var(--text-1)" font-family="Inter">${n.label}</text>`;
+    });
+    svg += `</svg>`;
+    return svg;
+  }
+  function renderGraphForPlate(plate){
+    document.getElementById("graphSvgWrap").innerHTML = buildVehicleGraphSVG(plate);
+    const adj = buildRelationshipGraph();
+    const order = bfsFrom(adj, "Vehicle:"+plate, 2).map(n => n.split(":")[1]);
+    document.getElementById("bfsTrace").textContent = "BFS traversal (depth 2): " + order.join(" → ");
+  }
   let graphSelectReady = false;
-  let graphPlates = [];
-
   function initGraphPage(){
-    const select = document.getElementById("graphVehicleSelect");
-    if(!select) return;
-
     renderClusterPanel();
-
+    const select = document.getElementById("graphVehicleSelect");
     if(!graphSelectReady){
       graphSelectReady = true;
-
-      select.innerHTML = `<option value="">Loading live vehicles…</option>`;
-
-      window.TRUSTRAK_API.get('/api/risk/cases?limit=100')
-        .then(data => {
-          graphPlates = [...new Set(
-            (data?.cases || [])
-              .map(c => String(c.registration_number || '').trim().toUpperCase())
-              .filter(Boolean)
-          )];
-
-          if(!graphPlates.includes("WB06J2192")){
-            graphPlates.unshift("WB06J2192");
-          }
-
-          select.innerHTML = graphPlates.map(plate =>
-            `<option value="${graphSafe(plate)}">${graphSafe(plate)}</option>`
-          ).join("");
-
-          select.value = "WB06J2192";
-
-          select.addEventListener("change", () => {
-            refreshGraphSelection(select.value);
-          });
-
-          refreshGraphSelection(select.value);
-        })
-        .catch(err => {
-          console.error('Graph vehicle list failed:', err);
-          select.innerHTML = `<option value="WB06J2192">WB06J2192</option>`;
-          refreshGraphSelection("WB06J2192");
-        });
-    }else if(select.value){
-      refreshGraphSelection(select.value);
+      select.innerHTML = Object.keys(VEHICLE_REGISTRY).map(p => `<option value="${p}">${p}</option>`).join("");
+      select.value = "TN 21 KL 7788";
+      select.addEventListener("change", () => renderGraphForPlate(select.value));
     }
-  }
-
-  async function refreshGraphSelection(plate){
-    const wrap = document.getElementById("graphSvgWrap");
-    const trace = document.getElementById("bfsTrace");
-
-    if(wrap) wrap.innerHTML = `<div style="padding:30px;color:var(--text-3)">Loading live graph data…</div>`;
-    if(trace) trace.textContent = "";
-
-    try{
-      const ctx = await loadGraphVehicle(plate);
-      renderLiveGraph(ctx);
-    }catch(err){
-      console.error('Live graph vehicle load failed:', err);
-      if(wrap) wrap.innerHTML = `
-        <div style="padding:30px;color:var(--red)">
-          Live graph data could not be loaded.
-        </div>`;
-      if(trace) trace.textContent = "";
-    }
+    renderGraphForPlate(select.value || "TN 21 KL 7788");
   }
 
   /* ---------- reports & analytics ---------- */

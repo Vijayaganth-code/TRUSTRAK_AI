@@ -164,42 +164,7 @@ def create_fastag_event(
 # =========================================================
 # GET FASTAG HISTORY
 # =========================================================
-# =========================================================
-# GET ALL FASTAG EVENTS
-# =========================================================
 
-@router.get("/events")
-def get_all_fastag_events(
-    limit: int = 200,
-    db: Session = Depends(get_db),
-):
-    limit = max(1, min(limit, 500))
-
-    events = (
-        db.query(FASTagEvent)
-        .order_by(
-            FASTagEvent.timestamp.desc()
-        )
-        .limit(limit)
-        .all()
-    )
-
-    return {
-        "event_count": len(events),
-        "events": [
-            {
-                "transaction_id": event.transaction_id,
-                "registration_number": event.registration_number,
-                "fastag_id": event.fastag_id,
-                "toll_plaza": event.toll_plaza,
-                "timestamp": event.timestamp,
-                "transaction_status": event.transaction_status,
-                "amount": event.amount,
-                "event_type": event.event_type,
-            }
-            for event in events
-        ],
-    }
 @router.get("/{registration_number}")
 def get_fastag_history(
     registration_number: str,
@@ -217,11 +182,13 @@ def get_fastag_history(
     )
 
     if not events:
-        return {
-            "registration_number": plate,
-            "event_count": 0,
-            "events": [],
-        }
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": "No FASTag events found",
+                "registration_number": plate,
+            },
+        )
 
     return {
         "registration_number": plate,
